@@ -28,12 +28,14 @@ export function LabFrame({
         <p className="min-w-0 flex-1 truncate text-sm font-medium">{title}</p>
         {actions}
       </header>
-      <div className="grid flex-1 lg:min-h-0 lg:grid-cols-[360px_minmax(0,1fr)_320px] lg:overflow-hidden">
-        <aside className="order-3 border-t lg:order-none lg:col-start-1 lg:h-full lg:min-h-0 lg:overflow-hidden lg:border-t-0 lg:border-r">
+      <div className="grid flex-1 lg:min-h-0 lg:grid-cols-[360px_minmax(0,1fr)_320px] lg:grid-rows-[minmax(0,1fr)] lg:overflow-hidden">
+        <aside className="order-3 border-t lg:order-none lg:col-start-1 lg:row-start-1 lg:h-full lg:min-h-0 lg:overflow-hidden lg:border-t-0 lg:border-r">
           {learner}
         </aside>
-        <div className="order-1 min-w-0 lg:col-start-2 lg:h-full lg:min-h-0 lg:overflow-y-auto">{stage}</div>
-        <aside className="order-2 border-t lg:order-none lg:col-start-3 lg:h-full lg:min-h-0 lg:overflow-hidden lg:border-t-0 lg:border-l">
+        <div className="order-1 min-w-0 lg:order-none lg:col-start-2 lg:row-start-1 lg:h-full lg:min-h-0 lg:overflow-y-auto">
+          {stage}
+        </div>
+        <aside className="order-2 border-t lg:order-none lg:col-start-3 lg:row-start-1 lg:h-full lg:min-h-0 lg:overflow-hidden lg:border-t-0 lg:border-l">
           {controls}
         </aside>
       </div>
