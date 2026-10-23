@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { builtinCards } from "@/lib/catalog";
 import { builtinLabs } from "@/lib/labs";
 import { idealGasLab } from "@/lib/labs/ideal-gas";
 import { interferenceLab } from "@/lib/labs/interference";
@@ -17,9 +18,12 @@ describe("built-in labs", () => {
     expect(builtinLabs).toHaveLength(5);
     for (const lab of builtinLabs) {
       expect(labSchema.safeParse(lab).success).toBe(true);
-      expect(lab.questions.length).toBeGreaterThanOrEqual(3);
-      expect(lab.questions.length).toBeLessThanOrEqual(5);
+      expect(lab.activity.items.length).toBeGreaterThanOrEqual(3);
+      expect(lab.tour.length).toBeGreaterThanOrEqual(3);
+      expect(lab.exports.some((item) => item.format === "csv")).toBe(true);
+      expect(lab.exports.some((item) => item.format === "png")).toBe(true);
     }
+    expect(builtinCards.map((card) => card.title)).toEqual(builtinLabs.map((lab) => lab.title));
   });
 
   it("measures a pendulum period close to theory", () => {

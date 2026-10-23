@@ -1,5 +1,10 @@
-import { LandingPage } from "@/components/landing/landing-page";
+import { Suspense } from "react";
+import { HomePage } from "@/components/landing/home-page";
 
-export default function HomePage() {
-  return <LandingPage />;
+export default function Page() {
+  return (
+    <Suspense>
+      <HomePage />
+    </Suspense>
+  );
 }

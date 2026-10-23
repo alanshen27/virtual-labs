@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type Ref } from "react";
+import { Button } from "antd";
 import { sanitizeSample, type LabSample } from "@/lib/sandbox/sample";
 import { buildSrcdoc } from "@/lib/sandbox/srcdoc";
 import type { ControlMap, LabSpec } from "@/lib/spec";
+
+export type SimHandle = {
+  capture: () => Promise<string>;
+};
 
 type Props = {
   lab: LabSpec;
@@ -13,10 +17,12 @@ type Props = {
   speed: number;
   resetNonce: number;
   onSample: (sample: LabSample) => void;
+  ref?: Ref<SimHandle | null>;
 };
 
-export function SimFrame({ lab, controls, playing, speed, resetNonce, onSample }: Props) {
+export function SimFrame({ lab, controls, playing, speed, resetNonce, onSample, ref }: Props) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const pendingCapture = useRef(new Map<string, (dataUrl: string) => void>());
   const controlsRef = useRef(controls);
   const playingRef = useRef(playing);
   const speedRef = useRef(speed);
@@ -72,6 +78,14 @@ export function SimFrame({ lab, controls, playing, speed, resetNonce, onSample }
         if (sample) onSampleRef.current(sample);
         return;
       }
+      if (data.type === "capture") {
+        const shot = event.data as { requestId?: unknown; dataUrl?: unknown };
+        if (typeof shot.requestId === "string" && typeof shot.dataUrl === "string") {
+          pendingCapture.current.get(shot.requestId)?.(shot.dataUrl);
+          pendingCapture.current.delete(shot.requestId);
+        }
+        return;
+      }
       if (data.type === "error") {
         setFailure({
           signature,
@@ -91,6 +105,23 @@ export function SimFrame({ lab, controls, playing, speed, resetNonce, onSample }
   useEffect(() => {
     post({ type: "playback", playing, speed });
   }, [playing, speed]);
+
+  useImperativeHandle(ref, () => ({
+    capture() {
+      const requestId = Math.random().toString(36).slice(2);
+      return new Promise((resolve, reject) => {
+        const timer = window.setTimeout(() => {
+          pendingCapture.current.delete(requestId);
+          reject(new Error("The canvas did not return an image."));
+        }, 2500);
+        pendingCapture.current.set(requestId, (dataUrl) => {
+          window.clearTimeout(timer);
+          resolve(dataUrl);
+        });
+        iframeRef.current?.contentWindow?.postMessage({ type: "capture", requestId }, "*");
+      });
+    },
+  }));
 
   const skipReset = useRef(true);
   useEffect(() => {
@@ -117,9 +148,7 @@ export function SimFrame({ lab, controls, playing, speed, resetNonce, onSample }
       {error ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-neutral-950/90 p-6 text-center text-sm text-white">
           <p>{error}</p>
-          <Button type="button" variant="secondary" onClick={() => setReloadEpoch((value) => value + 1)}>
-            Reload
-          </Button>
+          <Button onClick={() => setReloadEpoch((value) => value + 1)}>Reload</Button>
         </div>
       ) : null}
     </div>

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { pendulumLab } from "@/lib/labs/pendulum";
-import { extractJson, generateLab } from "@/lib/llm/generate";
+import { LAB_CONTRACT, buildMessages, extractJson, generateLab } from "@/lib/llm/generate";
+import { renderExport } from "@/lib/export-file";
 import type { LLMClient } from "@/lib/llm/client";
 import { pendulumPeriod, smallAnglePeriod } from "@/lib/physics";
 import { decodeShareHash, encodeShareHash } from "@/lib/share";
@@ -78,7 +79,48 @@ describe("share links", () => {
     expect(decoded.id).toBe(pendulumLab.id);
     expect(decoded.title).toBe(pendulumLab.title);
     expect(decoded.code).toBe(pendulumLab.code);
-    expect(decoded.questions).toHaveLength(pendulumLab.questions.length);
+    expect(decoded.activity.items).toHaveLength(pendulumLab.activity.items.length);
+    expect(decoded.exports.map((item) => item.id)).toEqual(pendulumLab.exports.map((item) => item.id));
+  });
+});
+
+describe("authoring contract", () => {
+  it("asks for exports and an activity sheet, and leaves quizzes out", () => {
+    expect(LAB_CONTRACT).toContain("exports");
+    expect(LAB_CONTRACT).toContain("activity");
+    expect(LAB_CONTRACT).not.toContain("multiple_choice");
+    const messages = buildMessages("Add a CSV of period versus length", [], { formats: ["csv", "png"] });
+    expect(messages[1]?.content).toContain("csv, png");
+  });
+});
+
+describe("export files", () => {
+  it("writes chart points as CSV and refuses a canvas export without an image", () => {
+    const csv = pendulumLab.exports.find((item) => item.format === "csv");
+    const png = pendulumLab.exports.find((item) => item.format === "png");
+    expect(csv).toBeTruthy();
+    expect(png).toBeTruthy();
+    const file = renderExport(csv!, pendulumLab.chart, {
+      readouts: [],
+      points: [
+        { x: 0.5, y: 1.4 },
+        { x: 1, y: 2 },
+      ],
+      series: null,
+      controls: {},
+      time: 1,
+    });
+    expect(file.body).toContain("Length,Period");
+    expect(file.body).toContain("0.5,1.4");
+    expect(() =>
+      renderExport(png!, pendulumLab.chart, {
+        readouts: [],
+        points: [],
+        series: null,
+        controls: {},
+        time: 0,
+      }),
+    ).toThrow(/canvas image/i);
   });
 });
 

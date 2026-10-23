@@ -48,6 +48,39 @@ export function builtinIdForPrompt(prompt: string): string | null {
   return match?.labId ?? null;
 }
 
+export const builtinCards: { id: string; title: string; summary: string; subject: string }[] = [
+  {
+    id: "pendulum",
+    title: "Pendulum period",
+    summary: "See why a longer string swings more slowly, and why a heavier bob does not.",
+    subject: "Physics",
+  },
+  {
+    id: "projectile",
+    title: "Projectile motion",
+    summary: "Launch a ball, then turn on air resistance and watch the range fall short.",
+    subject: "Physics",
+  },
+  {
+    id: "ideal-gas",
+    title: "Ideal gas law",
+    summary: "Move the piston and watch pressure follow PV = nRT.",
+    subject: "Chemistry",
+  },
+  {
+    id: "ohms-law",
+    title: "Ohm's law",
+    summary: "Change the battery and the resistors and watch the current dots speed up or stall.",
+    subject: "Electricity",
+  },
+  {
+    id: "interference",
+    title: "Wave interference",
+    summary: "Two ripples add into bright and dark bands. Change the wavelength and watch the bands spread.",
+    subject: "Waves",
+  },
+];
+
 export const gallerySections: {
   id: string;
   title: string;

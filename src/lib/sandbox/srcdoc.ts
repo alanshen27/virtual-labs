@@ -161,6 +161,10 @@ export function buildSrcdoc(code: string, initialControls: ControlMap): string {
         boot();
         postSample(true);
         startLoop();
+      } else if (msg.type === "capture") {
+        resize();
+        lab.draw(ctx, api, controls);
+        parent.postMessage({ type: "capture", requestId: msg.requestId, dataUrl: canvas.toDataURL("image/png") }, "*");
       }
     } catch (err) {
       postError(err);

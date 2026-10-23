@@ -75,34 +75,6 @@ export const controlSchema = z.discriminatedUnion("type", [
   selectSchema,
 ]);
 
-const choiceSchema = z.object({
-  id: z.string().regex(/^[a-z0-9]{1,12}$/),
-  text: z.string().min(1).max(200),
-});
-
-export const questionSchema = z
-  .object({
-    id: idSchema,
-    type: z.enum(["multiple_choice", "predict"]),
-    prompt: z.string().min(8).max(400),
-    choices: z.array(choiceSchema).min(2).max(5),
-    correctId: z.string(),
-    explanation: z.string().min(8).max(400),
-    tryIt: z.string().max(280).optional(),
-  })
-  .superRefine((question, ctx) => {
-    if (!question.choices.some((choice) => choice.id === question.correctId)) {
-      ctx.addIssue("correctId must match one of the choices");
-    }
-    const ids = new Set(question.choices.map((choice) => choice.id));
-    if (ids.size !== question.choices.length) {
-      ctx.addIssue("Choice ids must be unique");
-    }
-    if (question.type === "predict" && (!question.tryIt || question.tryIt.trim().length < 8)) {
-      ctx.addIssue("Predict questions need a tryIt hint of at least 8 characters");
-    }
-  });
-
 export const chartSchema = z.object({
   title: z.string().min(2).max(80),
   xLabel: z.string().min(1).max(40),
@@ -114,6 +86,47 @@ export const chartSchema = z.object({
   pointsLabel: z.string().max(40).optional(),
 });
 
+export const activityItemSchema = z.object({
+  id: idSchema,
+  prompt: z.string().min(8).max(280),
+  kind: z.enum(["short", "observation"]),
+  placeholder: z.string().max(120).optional(),
+});
+
+export const activitySchema = z.object({
+  title: z.string().min(3).max(80),
+  intro: z.string().max(400).optional(),
+  items: z.array(activityItemSchema).min(3).max(6),
+});
+
+export const tourStepSchema = z.object({
+  id: idSchema,
+  target: z.enum(["canvas", "controls", "readouts", "chart", "activity", "export"]),
+  title: z.string().min(3).max(80),
+  body: z.string().min(8).max(280),
+});
+
+export const exportSchema = z
+  .object({
+    id: idSchema,
+    label: z.string().min(3).max(80),
+    format: z.enum(["csv", "png", "json"]),
+    mime: z.string().min(3).max(80),
+    source: z.enum(["chart", "series", "readouts", "canvas", "state"]),
+    filename: z.string().min(3).max(80).optional(),
+  })
+  .superRefine((item, ctx) => {
+    if (item.format === "png" && item.source !== "canvas") {
+      ctx.addIssue("A PNG export has to use the canvas source");
+    }
+    if (item.format === "csv" && !["chart", "series", "readouts"].includes(item.source)) {
+      ctx.addIssue("A CSV export has to use chart, series, or readouts");
+    }
+    if (item.format === "json" && item.source !== "state") {
+      ctx.addIssue("A JSON export has to use the state source");
+    }
+  });
+
 export const labSchema = z
   .object({
     id: idSchema.default("generated"),
@@ -124,16 +137,22 @@ export const labSchema = z
     controls: z.array(controlSchema).min(2).max(8),
     code: z.string().min(40).max(20000),
     chart: chartSchema.optional(),
-    questions: z.array(questionSchema).min(3).max(5),
+    activity: activitySchema,
+    tour: z.array(tourStepSchema).min(3).max(6),
+    exports: z.array(exportSchema).min(1).max(6),
   })
   .superRefine((lab, ctx) => {
     const controlIds = new Set(lab.controls.map((control) => control.id));
     if (controlIds.size !== lab.controls.length) {
       ctx.addIssue("Control ids must be unique");
     }
-    const questionIds = new Set(lab.questions.map((question) => question.id));
-    if (questionIds.size !== lab.questions.length) {
-      ctx.addIssue("Question ids must be unique");
+    const itemIds = new Set(lab.activity.items.map((item) => item.id));
+    if (itemIds.size !== lab.activity.items.length) {
+      ctx.addIssue("Activity ids must be unique");
+    }
+    const exportIds = new Set(lab.exports.map((item) => item.id));
+    if (exportIds.size !== lab.exports.length) {
+      ctx.addIssue("Export ids must be unique");
     }
     if (!lab.controls.some((control) => control.type === "slider")) {
       ctx.addIssue("Include at least one slider");
@@ -145,8 +164,10 @@ export const labSchema = z
 
 export type LabSpec = z.infer<typeof labSchema>;
 export type ControlSpec = z.infer<typeof controlSchema>;
-export type QuestionSpec = z.infer<typeof questionSchema>;
 export type ChartSpec = z.infer<typeof chartSchema>;
+export type ActivitySheet = z.infer<typeof activitySchema>;
+export type TourStep = z.infer<typeof tourStepSchema>;
+export type ExportSpec = z.infer<typeof exportSchema>;
 export type ControlValue = number | boolean | string;
 export type ControlMap = Record<string, ControlValue>;
 

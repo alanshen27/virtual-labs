@@ -1,5 +1,5 @@
-import { GeneratingLab } from "@/components/lab/generating-lab";
+import { redirect } from "next/navigation";
 
 export default function NewLabPage() {
-  return <GeneratingLab />;
+  redirect("/create");
 }

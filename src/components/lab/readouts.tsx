@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import type { ChartPoint, LabSample, Readout } from "@/lib/sandbox/sample";
 import type { ChartSpec } from "@/lib/spec";
 import { formatNumber } from "@/lib/spec";
@@ -14,28 +12,19 @@ export function StatCards({ subscribe }: { subscribe: Subscribe }) {
   useEffect(() => subscribe((sample) => setReadouts(sample.readouts)), [subscribe]);
 
   if (!readouts || readouts.length === 0) {
-    return (
-      <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
-        <Skeleton className="h-[4.5rem] rounded-xl" />
-        <Skeleton className="h-[4.5rem] rounded-xl" />
-      </div>
-    );
+    return <div data-tour="readouts" className="h-24 rounded-lg bg-white" />;
   }
 
   return (
-    <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
+    <div data-tour="readouts" className="grid grid-cols-2 gap-4 xl:grid-cols-4">
       {readouts.map((readout) => (
-        <Card key={readout.label} size="sm" className="gap-0 py-3">
-          <CardContent className="px-3">
-            <p className="text-xs text-muted-foreground">{readout.label}</p>
-            <p className="mt-1 text-2xl font-medium tracking-tight tabular-nums">
-              {formatNumber(readout.value, readout.digits ?? 2)}
-              {readout.unit ? (
-                <span className="ml-1 text-sm font-normal text-muted-foreground">{readout.unit}</span>
-              ) : null}
-            </p>
-          </CardContent>
-        </Card>
+        <div key={readout.label} className="rounded-lg bg-white px-5 py-4">
+          <p className="text-sm text-neutral-500">{readout.label}</p>
+          <p className="mt-2 text-3xl font-medium tracking-tight text-neutral-900 tabular-nums">
+            {formatNumber(readout.value, readout.digits ?? 2)}
+            {readout.unit ? <span className="ml-2 text-base font-normal text-neutral-500">{readout.unit}</span> : null}
+          </p>
+        </div>
       ))}
     </div>
   );
@@ -105,73 +94,59 @@ export function LiveChart({
   const sortedPoints = [...points].sort((a, b) => a.x - b.x);
 
   return (
-    <Card size="sm">
-      <CardContent className="px-3 py-3">
-        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-          <h3 className="text-sm font-medium">{chart.title}</h3>
-          <div className="flex gap-3 text-xs text-muted-foreground">
-            {chart.seriesLabel ? (
-              <span className="inline-flex items-center gap-1.5">
-                <span className="h-0.5 w-4 border-t border-dashed border-foreground" />
-                {chart.seriesLabel}
-              </span>
-            ) : null}
-            {chart.pointsLabel ? (
-              <span className="inline-flex items-center gap-1.5">
-                <span className="size-1.5 rounded-full bg-primary" />
-                {chart.pointsLabel}
-              </span>
-            ) : null}
-          </div>
+    <section data-tour="chart" className="rounded-lg bg-white px-5 py-5">
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3">
+        <h3 className="text-base font-medium text-neutral-900">{chart.title}</h3>
+        <div className="flex gap-4 text-sm text-neutral-500">
+          {chart.seriesLabel ? (
+            <span className="inline-flex items-center gap-2">
+              <span className="h-0.5 w-5 border-t border-dashed border-neutral-700" />
+              {chart.seriesLabel}
+            </span>
+          ) : null}
+          {chart.pointsLabel ? (
+            <span className="inline-flex items-center gap-2">
+              <span className="size-2 rounded-full bg-[#1677ff]" />
+              {chart.pointsLabel}
+            </span>
+          ) : null}
         </div>
-        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={chart.title} className="h-44 w-full">
-          <line
-            x1={pad.left}
-            y1={pad.top}
-            x2={pad.left}
-            y2={height - pad.bottom}
-            stroke="var(--border)"
-          />
-          <line
-            x1={pad.left}
-            y1={height - pad.bottom}
-            x2={width - pad.right}
-            y2={height - pad.bottom}
-            stroke="var(--border)"
-          />
-          {empty ? (
-            <text
-              x={width / 2}
-              y={height / 2}
-              textAnchor="middle"
-              fill="var(--muted-foreground)"
-              fontSize="13"
-            >
-              {chart.emptyHint ?? "Run the simulation to plot data."}
+      </div>
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={chart.title} className="h-56 w-full">
+        <line x1={pad.left} y1={pad.top} x2={pad.left} y2={height - pad.bottom} stroke="#d9d9d9" />
+        <line
+          x1={pad.left}
+          y1={height - pad.bottom}
+          x2={width - pad.right}
+          y2={height - pad.bottom}
+          stroke="#d9d9d9"
+        />
+        {empty ? (
+          <text x={width / 2} y={height / 2} textAnchor="middle" fill="#8c8c8c" fontSize="14">
+            {chart.emptyHint ?? "Run the simulation to plot data."}
+          </text>
+        ) : (
+          <>
+            {series && series.length > 1 ? (
+              <path d={path(series)} fill="none" stroke="#434343" strokeWidth="1.5" strokeDasharray="5 4" />
+            ) : null}
+            {sortedPoints.length > 1 ? (
+              <path d={path(sortedPoints)} fill="none" stroke="#1677ff" strokeWidth="2" />
+            ) : null}
+            {sortedPoints.map((point) => (
+              <circle key={`${point.x}-${point.y}`} cx={sx(point.x)} cy={sy(point.y)} r="3.5" fill="#1677ff" />
+            ))}
+            <text x={pad.left} y={14} fill="#8c8c8c" fontSize="12">
+              {formatNumber(yDomain.max, 1)}
+              {chart.yUnit ? ` ${chart.yUnit}` : ""}
             </text>
-          ) : (
-            <>
-              {series && series.length > 1 ? (
-                <path d={path(series)} fill="none" stroke="var(--foreground)" strokeWidth="1.5" strokeDasharray="5 4" />
-              ) : null}
-              {sortedPoints.length > 1 ? (
-                <path d={path(sortedPoints)} fill="none" stroke="var(--primary)" strokeWidth="2" />
-              ) : null}
-              {sortedPoints.map((point) => (
-                <circle key={`${point.x}-${point.y}`} cx={sx(point.x)} cy={sy(point.y)} r="3" fill="var(--primary)" />
-              ))}
-              <text x={pad.left} y={14} fill="var(--muted-foreground)" fontSize="11">
-                {formatNumber(yDomain.max, 1)}
-                {chart.yUnit ? ` ${chart.yUnit}` : ""}
-              </text>
-              <text x={width - pad.right} y={height - 8} textAnchor="end" fill="var(--muted-foreground)" fontSize="11">
-                {chart.xLabel}
-                {chart.xUnit ? ` (${chart.xUnit})` : ""}
-              </text>
-            </>
-          )}
-        </svg>
-      </CardContent>
-    </Card>
+            <text x={width - pad.right} y={height - 8} textAnchor="end" fill="#8c8c8c" fontSize="12">
+              {chart.xLabel}
+              {chart.xUnit ? ` (${chart.xUnit})` : ""}
+            </text>
+          </>
+        )}
+      </svg>
+    </section>
   );
 }
