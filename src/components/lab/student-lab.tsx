@@ -1,13 +1,14 @@
 "use client";
 
-import { DownloadOutlined, PauseOutlined, PlayCircleOutlined, ReloadOutlined } from "@ant-design/icons";
-import { App, Button, Dropdown, Segmented, Spin, Tour, Typography } from "antd";
-import type { TourProps } from "antd";
+import { DownloadIcon, PauseIcon, PlayIcon, ReloadIcon } from "@radix-ui/react-icons";
+import { Button, DropdownMenu, Flex, Heading, IconButton, SegmentedControl, Spinner, Text } from "@radix-ui/themes";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivitySheet } from "@/components/lab/activity-sheet";
 import { ControlsPanel } from "@/components/lab/controls-panel";
+import { GuidedTour } from "@/components/lab/guided-tour";
 import { LiveChart, StatCards, TimeReadout, type Subscribe } from "@/components/lab/readouts";
 import { SimFrame, type SimHandle } from "@/components/lab/sim-frame";
+import { useNotice } from "@/components/notice";
 import { SiteHeader } from "@/components/site-header";
 import { downloadExport, renderExport, type ExportSnapshot } from "@/lib/export-file";
 import type { LabSample } from "@/lib/sandbox/sample";
@@ -51,10 +52,10 @@ export function StudentLab({
 
   if (loaded === undefined) {
     return (
-      <div className="min-h-svh bg-[#f5f5f5]">
+      <div className="min-h-svh">
         <SiteHeader />
         <div className="flex justify-center py-24">
-          <Spin size="large" />
+          <Spinner size="3" />
         </div>
       </div>
     );
@@ -62,13 +63,15 @@ export function StudentLab({
 
   if (!loaded) {
     return (
-      <div className="min-h-svh bg-[#f5f5f5]">
+      <div className="min-h-svh">
         <SiteHeader />
         <div className="mx-auto max-w-lg px-6 py-24 text-center">
-          <Typography.Title level={3}>This lab is not on this device</Typography.Title>
-          <Typography.Paragraph type="secondary">
+          <Heading size="6" mb="2">
+            This lab is not on this device
+          </Heading>
+          <Text as="p" color="gray">
             Built-in labs are always open. A teacher can publish a custom lab, or send you a share link.
-          </Typography.Paragraph>
+          </Text>
         </div>
       </div>
     );
@@ -78,7 +81,7 @@ export function StudentLab({
 }
 
 export function Experiment({ lab, showSheet }: { lab: LabSpec; showSheet: boolean }) {
-  const { message } = App.useApp();
+  const notice = useNotice();
   const [controls, setControls] = useState<ControlMap>(() => defaultControls(lab));
   const [playing, setPlaying] = useState(true);
   const [speed, setSpeed] = useState(1);
@@ -142,6 +145,11 @@ export function Experiment({ lab, showSheet }: { lab: LabSpec; showSheet: boolea
     if (spec && spec.live === false) setResetNonce((nonce) => nonce + 1);
   }
 
+  function closeTour() {
+    setTourOpen(false);
+    localStorage.setItem(`virtuallabs.tour.${lab.id}`, "1");
+  }
+
   async function onExport(exportId: string) {
     const item = lab.exports.find((entry) => entry.id === exportId);
     if (!item) return;
@@ -149,49 +157,48 @@ export function Experiment({ lab, showSheet }: { lab: LabSpec; showSheet: boolea
       const pngDataUrl = item.source === "canvas" ? await simRef.current?.capture() : null;
       const file = renderExport(item, lab.chart, { ...snapshotRef.current, pngDataUrl });
       downloadExport(file);
-      message.success(`Downloaded ${file.filename}`);
+      notice.success(`Downloaded ${file.filename}`);
     } catch (error) {
-      message.error(error instanceof Error ? error.message : "Export failed.");
+      notice.error(error instanceof Error ? error.message : "Export failed.");
     }
   }
 
-  const tourSteps: TourProps["steps"] = lab.tour.map((step) => ({
-    title: step.title,
-    description: step.body,
-    target: () => document.querySelector(`[data-tour="${step.target}"]`) as HTMLElement,
-  }));
-
   return (
-    <div className={showSheet ? "min-h-svh bg-[#f5f5f5]" : ""}>
+    <div className={showSheet ? "min-h-svh" : ""}>
       {showSheet ? <SiteHeader /> : null}
       <div className={showSheet ? "mx-auto flex max-w-[1440px] flex-col gap-8 px-6 py-8 lg:px-8" : "flex flex-col gap-6"}>
         <div className="flex flex-wrap items-center gap-4">
           <div className="min-w-0 flex-1">
-            <Typography.Title level={showSheet ? 2 : 4} style={{ margin: 0 }}>
-              {lab.title}
-            </Typography.Title>
+            <Heading size={showSheet ? "7" : "5"}>{lab.title}</Heading>
             {showSheet ? (
-              <Typography.Paragraph type="secondary" style={{ margin: "8px 0 0", maxWidth: 720 }}>
+              <Text as="p" color="gray" mt="2" style={{ maxWidth: 720, lineHeight: 1.6 }}>
                 {lab.summary}
-              </Typography.Paragraph>
+              </Text>
             ) : null}
           </div>
           <div data-tour="export">
-            <Dropdown
-              menu={{
-                items: lab.exports.map((item) => ({ key: item.id, label: item.label })),
-                onClick: ({ key }) => void onExport(String(key)),
-              }}
-            >
-              <Button icon={<DownloadOutlined />}>Export</Button>
-            </Dropdown>
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger>
+                <Button variant="soft" color="gray">
+                  <DownloadIcon />
+                  Export
+                </Button>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content>
+                {lab.exports.map((item) => (
+                  <DropdownMenu.Item key={item.id} onSelect={() => void onExport(item.id)}>
+                    {item.label}
+                  </DropdownMenu.Item>
+                ))}
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
           </div>
         </div>
 
         {showSheet ? (
-          <Typography.Paragraph style={{ fontSize: 16, lineHeight: 1.7, maxWidth: 760, marginBottom: 0 }}>
+          <Text as="p" size="3" style={{ lineHeight: 1.7, maxWidth: 760 }}>
             {lab.concept}
-          </Typography.Paragraph>
+          </Text>
         ) : null}
 
         <div className="grid items-start gap-8 lg:grid-cols-[340px_minmax(0,1fr)]">
@@ -201,33 +208,40 @@ export function Experiment({ lab, showSheet }: { lab: LabSpec; showSheet: boolea
           <div className="order-1 flex flex-col gap-6 lg:order-2">
             <StatCards subscribe={subscribe} />
             <section className="overflow-hidden rounded-lg bg-neutral-950">
-              <div className="flex flex-wrap items-center gap-3 bg-white px-4 py-3">
-                <Button
+              <Flex align="center" gap="3" wrap="wrap" className="bg-[var(--color-panel-solid)] px-4 py-3">
+                <IconButton
                   aria-label={playing ? "Pause" : "Play"}
-                  icon={playing ? <PauseOutlined /> : <PlayCircleOutlined />}
+                  variant="soft"
+                  color="gray"
+                  size="3"
                   onClick={() => setPlaying((value) => !value)}
-                />
-                <Button
+                >
+                  {playing ? <PauseIcon /> : <PlayIcon />}
+                </IconButton>
+                <IconButton
                   aria-label="Reset simulation"
-                  icon={<ReloadOutlined />}
+                  variant="soft"
+                  color="gray"
+                  size="3"
                   onClick={() => {
                     setPlaying(true);
                     setResetNonce((nonce) => nonce + 1);
                   }}
-                />
-                <Segmented
+                >
+                  <ReloadIcon />
+                </IconButton>
+                <SegmentedControl.Root
                   value={String(speed)}
-                  options={[
-                    { label: "0.5×", value: "0.5" },
-                    { label: "1×", value: "1" },
-                    { label: "2×", value: "2" },
-                  ]}
-                  onChange={(next) => {
+                  onValueChange={(next) => {
                     if (next === "0.5" || next === "1" || next === "2") setSpeed(Number(next));
                   }}
-                />
+                >
+                  <SegmentedControl.Item value="0.5">0.5×</SegmentedControl.Item>
+                  <SegmentedControl.Item value="1">1×</SegmentedControl.Item>
+                  <SegmentedControl.Item value="2">2×</SegmentedControl.Item>
+                </SegmentedControl.Root>
                 <TimeReadout subscribe={subscribe} />
-              </div>
+              </Flex>
               <div data-tour="canvas" className="h-[420px] lg:h-[520px]">
                 <SimFrame
                   ref={simRef}
@@ -245,16 +259,7 @@ export function Experiment({ lab, showSheet }: { lab: LabSpec; showSheet: boolea
         </div>
         {showSheet ? <ActivitySheet lab={lab} /> : null}
       </div>
-      {showSheet ? (
-        <Tour
-          open={tourOpen}
-          steps={tourSteps}
-          onClose={() => {
-            setTourOpen(false);
-            localStorage.setItem(`virtuallabs.tour.${lab.id}`, "1");
-          }}
-        />
-      ) : null}
+      {showSheet ? <GuidedTour open={tourOpen} steps={lab.tour} onClose={closeTour} /> : null}
     </div>
   );
 }

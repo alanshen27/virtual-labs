@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { Theme } from "@radix-ui/themes";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
+import "@radix-ui/themes/styles.css";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -23,7 +25,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
       <body className="min-h-full">
-        <Providers>{children}</Providers>
+        <Theme
+          className="min-h-svh"
+          accentColor="indigo"
+          appearance="light"
+          grayColor="slate"
+          panelBackground="solid"
+          radius="medium"
+          scaling="110%"
+        >
+          <Providers>{children}</Providers>
+        </Theme>
       </body>
     </html>
   );

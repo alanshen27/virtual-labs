@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Typography } from "antd";
+import { Card, Heading, Text } from "@radix-ui/themes";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -29,53 +29,57 @@ export function ExplorePage() {
   }, [status]);
 
   return (
-    <div className="min-h-svh bg-[#f5f5f5]">
+    <div className="min-h-svh">
       <SiteHeader />
-      <main className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-12 lg:px-8">
+      <main className="mx-auto flex max-w-6xl flex-col gap-12 px-6 py-14 lg:px-8">
         <div>
-          <Typography.Title level={2}>Explore</Typography.Title>
-          <Typography.Paragraph type="secondary">
+          <Heading size="7" mb="2">
+            Explore
+          </Heading>
+          <Text as="p" size="3" color="gray">
             Built-in labs run without an account. Labs you saved appear here after you sign in.
-          </Typography.Paragraph>
+          </Text>
         </div>
         {saved.length > 0 ? (
-          <section>
-            <Typography.Title level={3}>Your labs</Typography.Title>
+          <section className="flex flex-col gap-4">
+            <Heading size="5">Your labs</Heading>
             <div className="grid gap-4 md:grid-cols-2">
               {saved.map((lab) => (
-                <Link key={lab.labId} href={`/lab/${lab.labId}`}>
-                  <Card hoverable>
-                    <Typography.Text type="secondary">
+                <Card key={lab.labId} size="3" asChild>
+                  <Link href={`/lab/${lab.labId}`}>
+                    <Text as="p" size="2" color="gray">
                       {lab.subject}
                       {lab.published ? " · shared with students" : " · private"}
-                    </Typography.Text>
-                    <Typography.Title level={4} style={{ marginTop: 4 }}>
+                    </Text>
+                    <Heading size="4" mt="1" mb="2">
                       {lab.title}
-                    </Typography.Title>
-                    <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                    </Heading>
+                    <Text as="p" size="2" color="gray">
                       {lab.summary}
-                    </Typography.Paragraph>
-                  </Card>
-                </Link>
+                    </Text>
+                  </Link>
+                </Card>
               ))}
             </div>
           </section>
         ) : null}
-        <section>
-          <Typography.Title level={3}>Built-in</Typography.Title>
+        <section className="flex flex-col gap-4">
+          <Heading size="5">Built-in</Heading>
           <div className="grid gap-4 md:grid-cols-2">
             {builtinCards.map((lab) => (
-              <Link key={lab.id} href={`/lab/${lab.id}`}>
-                <Card hoverable>
-                  <Typography.Text type="secondary">{lab.subject}</Typography.Text>
-                  <Typography.Title level={4} style={{ marginTop: 4 }}>
+              <Card key={lab.id} size="3" asChild>
+                <Link href={`/lab/${lab.id}`}>
+                  <Text as="p" size="2" color="gray">
+                    {lab.subject}
+                  </Text>
+                  <Heading size="4" mt="1" mb="2">
                     {lab.title}
-                  </Typography.Title>
-                  <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                  </Heading>
+                  <Text as="p" size="2" color="gray">
                     {lab.summary}
-                  </Typography.Paragraph>
-                </Card>
-              </Link>
+                  </Text>
+                </Link>
+              </Card>
             ))}
           </div>
         </section>

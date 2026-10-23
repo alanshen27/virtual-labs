@@ -1,61 +1,67 @@
 "use client";
 
-import { Button, Card, Typography } from "antd";
+import { Button, Card, Heading, Text } from "@radix-ui/themes";
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { builtinCards } from "@/lib/catalog";
 
 export function HomePage() {
   return (
-    <div className="min-h-svh bg-[#f5f5f5]">
+    <div className="min-h-svh">
       <SiteHeader />
-      <main className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-12 lg:px-8">
+      <main className="mx-auto flex max-w-6xl flex-col gap-12 px-6 py-14 lg:px-8">
         <div className="max-w-3xl">
-          <Typography.Title style={{ marginBottom: 12 }}>Science you can move</Typography.Title>
-          <Typography.Paragraph style={{ fontSize: 18, lineHeight: 1.6 }}>
+          <Heading size="8" mb="3">
+            Science you can move
+          </Heading>
+          <Text as="p" size="4" color="gray" style={{ lineHeight: 1.6 }}>
             Teachers design a visualisation by chatting with the model. Students run the experiment, keep an activity
             sheet, and export the data.
-          </Typography.Paragraph>
+          </Text>
         </div>
         <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <Typography.Title level={3}>Create</Typography.Title>
-            <Typography.Paragraph>
+          <Card size="3">
+            <Heading size="6" mb="2">
+              Create
+            </Heading>
+            <Text as="p" size="3" color="gray" mb="4" style={{ lineHeight: 1.6 }}>
               Sign in, describe the lab, and watch the preview update. Ask for sliders, a chart, and the export files
               you want students to download.
-            </Typography.Paragraph>
-            <Link href="/create">
-              <Button type="primary" size="large">
-                Design a lab
-              </Button>
-            </Link>
+            </Text>
+            <Button size="3" asChild>
+              <Link href="/create">Design a lab</Link>
+            </Button>
           </Card>
-          <Card>
-            <Typography.Title level={3}>Explore</Typography.Title>
-            <Typography.Paragraph>
+          <Card size="3">
+            <Heading size="6" mb="2">
+              Explore
+            </Heading>
+            <Text as="p" size="3" color="gray" mb="4" style={{ lineHeight: 1.6 }}>
               Open a built-in experiment with no account. Change the controls, fill in the activity sheet, and take a
               short tour the first time.
-            </Typography.Paragraph>
-            <Link href="/explore">
-              <Button size="large">Run an experiment</Button>
-            </Link>
+            </Text>
+            <Button size="3" variant="soft" color="gray" asChild>
+              <Link href="/explore">Run an experiment</Link>
+            </Button>
           </Card>
         </div>
-        <section>
-          <Typography.Title level={3}>Built-in labs</Typography.Title>
+        <section className="flex flex-col gap-4">
+          <Heading size="6">Built-in labs</Heading>
           <div className="grid gap-4 md:grid-cols-2">
             {builtinCards.map((lab) => (
-              <Link key={lab.id} href={`/lab/${lab.id}`}>
-                <Card hoverable>
-                  <Typography.Text type="secondary">{lab.subject}</Typography.Text>
-                  <Typography.Title level={4} style={{ marginTop: 4 }}>
+              <Card key={lab.id} size="3" asChild>
+                <Link href={`/lab/${lab.id}`}>
+                  <Text as="p" size="2" color="gray">
+                    {lab.subject}
+                  </Text>
+                  <Heading size="4" mt="1" mb="2">
                     {lab.title}
-                  </Typography.Title>
-                  <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                  </Heading>
+                  <Text as="p" size="2" color="gray">
                     {lab.summary}
-                  </Typography.Paragraph>
-                </Card>
-              </Link>
+                  </Text>
+                </Link>
+              </Card>
             ))}
           </div>
         </section>

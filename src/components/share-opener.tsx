@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Typography } from "antd";
+import { Button, Heading, Text } from "@radix-ui/themes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -33,19 +33,23 @@ export function ShareOpener() {
   }, [router]);
 
   return (
-    <div className="min-h-svh bg-[#f5f5f5]">
+    <div className="min-h-svh">
       <SiteHeader />
       <main className="mx-auto flex max-w-md flex-col items-center px-6 py-24 text-center">
         {error ? (
           <>
-            <Typography.Title level={3}>Link could not be opened</Typography.Title>
-            <Typography.Paragraph type="secondary">{error}</Typography.Paragraph>
-            <Link href="/explore">
-              <Button>Browse labs</Button>
-            </Link>
+            <Heading size="6" mb="2">
+              Link could not be opened
+            </Heading>
+            <Text as="p" color="gray" mb="4">
+              {error}
+            </Text>
+            <Button asChild variant="soft" color="gray">
+              <Link href="/explore">Browse labs</Link>
+            </Button>
           </>
         ) : (
-          <Typography.Paragraph>Opening lab…</Typography.Paragraph>
+          <Text color="gray">Opening lab…</Text>
         )}
       </main>
     </div>

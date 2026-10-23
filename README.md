@@ -52,7 +52,7 @@ The credentials provider accepts only the dev email and password above. It upser
 
 ## UI
 
-Components, icons, and theming come from [Ant Design](https://ant.design/) (`antd`, `@ant-design/icons`) through `ConfigProvider`. Tailwind is only for page layout. Spacing is deliberately loose: controls are stacked with room between them, the canvas is large, and the activity sheet sits below the fold instead of being packed into a third column.
+Components, icons, and theming come from [Radix Themes](https://www.radix-ui.com/themes) (`@radix-ui/themes`, `@radix-ui/react-icons`). The first-run tour is a coach mark on a Radix Themes card — Themes has no tour component — that highlights each `data-tour` target and walks the lab's steps. Tailwind is only for page layout. Spacing is deliberately loose: controls are stacked with room between them, the canvas is large, and the activity sheet sits below the fold instead of being packed into a third column.
 
 ## Architecture
 

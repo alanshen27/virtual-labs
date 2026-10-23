@@ -34,7 +34,7 @@ export function TimeReadout({ subscribe }: { subscribe: Subscribe }) {
   const [time, setTime] = useState(0);
   useEffect(() => subscribe((sample) => setTime(sample.time)), [subscribe]);
   return (
-    <span className="ml-auto font-mono text-xs text-muted-foreground tabular-nums">{time.toFixed(1)} s</span>
+    <span className="ml-auto font-mono text-xs text-[var(--gray-11)] tabular-nums">{time.toFixed(1)} s</span>
   );
 }
 
@@ -106,41 +106,41 @@ export function LiveChart({
           ) : null}
           {chart.pointsLabel ? (
             <span className="inline-flex items-center gap-2">
-              <span className="size-2 rounded-full bg-[#1677ff]" />
+              <span className="size-2 rounded-full bg-[var(--accent-9)]" />
               {chart.pointsLabel}
             </span>
           ) : null}
         </div>
       </div>
       <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={chart.title} className="h-56 w-full">
-        <line x1={pad.left} y1={pad.top} x2={pad.left} y2={height - pad.bottom} stroke="#d9d9d9" />
+        <line x1={pad.left} y1={pad.top} x2={pad.left} y2={height - pad.bottom} stroke="var(--gray-6)" />
         <line
           x1={pad.left}
           y1={height - pad.bottom}
           x2={width - pad.right}
           y2={height - pad.bottom}
-          stroke="#d9d9d9"
+          stroke="var(--gray-6)"
         />
         {empty ? (
-          <text x={width / 2} y={height / 2} textAnchor="middle" fill="#8c8c8c" fontSize="14">
+          <text x={width / 2} y={height / 2} textAnchor="middle" fill="var(--gray-9)" fontSize="14">
             {chart.emptyHint ?? "Run the simulation to plot data."}
           </text>
         ) : (
           <>
             {series && series.length > 1 ? (
-              <path d={path(series)} fill="none" stroke="#434343" strokeWidth="1.5" strokeDasharray="5 4" />
+              <path d={path(series)} fill="none" stroke="var(--gray-11)" strokeWidth="1.5" strokeDasharray="5 4" />
             ) : null}
             {sortedPoints.length > 1 ? (
-              <path d={path(sortedPoints)} fill="none" stroke="#1677ff" strokeWidth="2" />
+              <path d={path(sortedPoints)} fill="none" stroke="var(--accent-9)" strokeWidth="2" />
             ) : null}
             {sortedPoints.map((point) => (
-              <circle key={`${point.x}-${point.y}`} cx={sx(point.x)} cy={sy(point.y)} r="3.5" fill="#1677ff" />
+              <circle key={`${point.x}-${point.y}`} cx={sx(point.x)} cy={sy(point.y)} r="3.5" fill="var(--accent-9)" />
             ))}
-            <text x={pad.left} y={14} fill="#8c8c8c" fontSize="12">
+            <text x={pad.left} y={14} fill="var(--gray-9)" fontSize="12">
               {formatNumber(yDomain.max, 1)}
               {chart.yUnit ? ` ${chart.yUnit}` : ""}
             </text>
-            <text x={width - pad.right} y={height - 8} textAnchor="end" fill="#8c8c8c" fontSize="12">
+            <text x={width - pad.right} y={height - 8} textAnchor="end" fill="var(--gray-9)" fontSize="12">
               {chart.xLabel}
               {chart.xUnit ? ` (${chart.xUnit})` : ""}
             </text>

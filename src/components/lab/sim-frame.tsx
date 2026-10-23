@@ -1,7 +1,7 @@
 "use client";
 
+import { Button } from "@radix-ui/themes";
 import { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type Ref } from "react";
-import { Button } from "antd";
 import { sanitizeSample, type LabSample } from "@/lib/sandbox/sample";
 import { buildSrcdoc } from "@/lib/sandbox/srcdoc";
 import type { ControlMap, LabSpec } from "@/lib/spec";
@@ -148,7 +148,9 @@ export function SimFrame({ lab, controls, playing, speed, resetNonce, onSample, 
       {error ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-neutral-950/90 p-6 text-center text-sm text-white">
           <p>{error}</p>
-          <Button onClick={() => setReloadEpoch((value) => value + 1)}>Reload</Button>
+          <Button color="gray" highContrast variant="solid" onClick={() => setReloadEpoch((value) => value + 1)}>
+            Reload
+          </Button>
         </div>
       ) : null}
     </div>
